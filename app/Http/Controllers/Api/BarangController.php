@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Barang;
 use App\Services\ConflictValidationService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class BarangController extends Controller
 {
@@ -67,7 +68,12 @@ class BarangController extends Controller
         $barang = Barang::findOrFail($id);
 
         $validated = $request->validate([
-            'kode_barang' => 'required|string|max:30|unique:barang,kode_barang,' . $id . ',id_barang',
+            'kode_barang' => [
+                'required',
+                'string',
+                'max:30',
+                Rule::unique('barang', 'kode_barang')->ignore($id, 'id_barang'),
+            ],
             'nama_barang' => 'required|string|max:100',
             'kategori' => 'required|in:scaffolding,jackbase,clamp',
             'harga_sewa_per_hari' => 'required|numeric|min:0',
