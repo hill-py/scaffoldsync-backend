@@ -1,0 +1,50 @@
+services:
+  app:
+    build:
+        context: .
+        dockerfile: Dockerfile
+    image: scaffoldsync-app
+    container_name: scaffoldsync-app
+    restart: unless-stopped
+    tty: true
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+    networks:
+      - scaffoldsync-network
+
+  webserver:
+    image: nginx:alpine
+    container_name: scaffoldsync-webserver
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d/
+    networks:
+      - scaffoldsync-network
+
+  db:
+    image: mysql:8.0
+    container_name: scaffoldsync-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: scaffoldsync_db
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_PASSWORD: userpassword
+      MYSQL_USER: scaffoldsync_user
+    ports:
+      - "33061:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - scaffoldsync-network
+
+networks:
+  scaffoldsync-network:
+    driver: bridge
+
+volumes:
+  dbdata:
+    driver: local
